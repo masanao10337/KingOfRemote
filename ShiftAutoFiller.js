@@ -6,26 +6,26 @@ class ShiftAutoFiller {
   constructor() {
     this.#createButton();
 
-    if (this.isSchedulePage()) {
-        this.renderButton();
+    if (this.#isSchedulePage()) {
+        this.#renderButton();
     } else {
-        this.showAlert();
+        this.#showAlert();
     }
   }
 
-  isSchedulePage() {
+  #isSchedulePage() {
     const pageTitle = document
         .querySelector(".htBlock-pageTitle")
         .childNodes[3].textContent.replace(/\r?\n/g, "");
     return pageTitle === 'スケジュール申請';
   }
-  renderButton () {
+  #renderButton () {
     document
         .getElementsByClassName("htBlock-headerPanel_inner")[0]
         .appendChild(this.#submitBtn);
   }
 
-  showAlert() {
+  #showAlert() {
     window.alert('スケジュール申請ページではありません。泣')
   }
 
