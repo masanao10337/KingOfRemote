@@ -16,7 +16,7 @@ class ShiftAutoFiller {
   #isSchedulePage() {
     const pageTitle = document
         .querySelector(".htBlock-pageTitle")
-        .childNodes[3].textContent.replace(/\r?\n/g, "");
+        ?.childNodes[3].textContent.replace(/\r?\n/g, "");
     return pageTitle === 'スケジュール申請';
   }
   #renderButton () {
