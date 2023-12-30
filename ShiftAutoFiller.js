@@ -123,4 +123,4 @@ class ShiftAutoFiller {
   }
 }
 
-const autoFiller = new ShiftAutoFiller;
+new ShiftAutoFiller;
