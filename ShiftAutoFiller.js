@@ -1,93 +1,126 @@
-// 設定 **************************************************
+class ShiftAutoFiller {
+  static #defaultRemoteDay = ['火', '水'];
+  static #zaitakuCoreTime10To14 = '90000040394904';
+  #submitBtn;
 
-// リモート勤務する曜日をセットして下さい。
-const REMOTE_DAY_OF_WEEK = [ '火', '水' ];
+  constructor() {
+    this.#createButton();
 
-// セレクトボックスでセットしたいvalue値をセットして下さい。
-// 【在宅】コアタイム（10-14）のvalue値：'90000040394904'
-// 【在宅】コアタイム（9-13）のvalue値：'90000040394805'
-const SET_VALUE = '90000040394904';
-
-// *******************************************************
-
-const pageTitle = document.querySelector('.htBlock-pageTitle').childNodes[3].innerHTML.replace(/\r?\n/g, '');
-const holidays = getHolidays();
-if (pageTitle === 'スケジュール申請') {
-  createButton();
-}
-
-function createButton() {
-  const btn = document.createElement('div');
-  btn.innerHTML = '在宅勤怠の一括入力';
-  btn.style.maxWidth = '100%';
-  btn.style.height = '40px';
-  btn.style.margin = '10px 20px';
-  btn.style.lineHeight = '40px';
-  btn.style.cursor = 'pointer';
-  btn.style.background = '#1D9E48';
-  btn.style.color = '#fff';
-  btn.style.textAlign = 'center';
-  btn.style.borderRadius = '4px';
-  btn.addEventListener('mouseover', () => {
-    btn.style.background = '#008735';
-  });
-  btn.addEventListener('mouseleave', () => {
-    btn.style.background = '#1D9E48';
-  });
-  btn.onclick = () => {
-    var result = window.confirm(REMOTE_DAY_OF_WEEK.map(w => {return w + ' '}) + 'のシフトを一括で在宅申請しますか？');
-    if (result) { setRemoteWorkShift(); }
-  }
-  document.getElementsByClassName('htBlock-headerPanel_inner')[0].appendChild(btn);
-}
-
-function setRemoteWorkShift() {
-  const settingTargetIds = Array.from(document.getElementsByName('requested_schedule_pattern_list')).map(target => target.id);
-  const targetDates = settingTargetIds.map(id => id.slice(-8));
-
-  for (targetDate of targetDates) {
-    if (isHoliday(targetDate, holidays)) { continue; }
-    if(!REMOTE_DAY_OF_WEEK.includes(getDayOfWeek(targetDate))) { continue; }
-    const setting_target = document.getElementById('requestedSchedulePatternList_' + targetDate);
-    Array.from(setting_target.options).map(option => {
-      if (option.value === SET_VALUE) {
-        option.selected = true;
-        setting_target.onchange();
-      }
-    });
-  }
-}
-
-function getHolidays() {
-  if (pageTitle != 'スケジュール申請') {
-    return;
-  }
-  const holidaysArray = Array.from(document.getElementsByClassName('holiday')).map(target => target.textContent);
-  let array = [];
-  for (holiday of holidaysArray) {
-    if (holiday.slice(6, 7) != '日') {
-      const month = holiday.slice(0, 2);
-      const day = holiday.slice(3, 5)
-      array.push(month + day);
+    if (this.isSchedulePage()) {
+        this.renderButton();
+    } else {
+        this.showAlert();
     }
   }
 
-  return array;
+  isSchedulePage() {
+    const pageTitle = document
+        .querySelector(".htBlock-pageTitle")
+        .childNodes[3].textContent.replace(/\r?\n/g, "");
+    return pageTitle === 'スケジュール申請';
+  }
+  renderButton () {
+    document
+        .getElementsByClassName("htBlock-headerPanel_inner")[0]
+        .appendChild(this.#submitBtn);
+  }
+
+  showAlert() {
+    window.alert('スケジュール申請ページではありません。泣')
+  }
+
+  #createButton () {
+    this.#generateButton();
+    this.#styleButton();
+    this.#setButtonEvent();
+  }
+
+  #generateButton () {
+    this.#submitBtn = document.createElement('div');
+  }
+
+  #styleButton () {
+    this.#submitBtn.innerHTML = '在宅勤怠の一括入力';
+    this.#submitBtn.style.maxWidth = '100%';
+    this.#submitBtn.style.height = '40px';
+    this.#submitBtn.style.margin = '10px 20px';
+    this.#submitBtn.style.lineHeight = '40px';
+    this.#submitBtn.style.cursor = 'pointer';
+    this.#submitBtn.style.background = '#1D9E48';
+    this.#submitBtn.style.color = '#fff';
+    this.#submitBtn.style.textAlign = 'center';
+    this.#submitBtn.style.borderRadius = '4px';
+    this.#submitBtn.addEventListener('mouseover', () => {
+      this.#submitBtn.style.background = '#008735';
+    });
+    this.#submitBtn.addEventListener('mouseleave', () => {
+      this.#submitBtn.style.background = '#1D9E48';
+    });
+  }
+
+  #setButtonEvent() {
+    this.#submitBtn.onclick = () => {
+      const isConfirmed = window.confirm(
+        `${ShiftAutoFiller.#defaultRemoteDay.join(' / ')}曜日がリモートのシフトを一括で選択しますか？`
+      );
+      if (isConfirmed) this.#selectRemoteShift();
+    };
+  }
+
+  #selectRemoteShift() {
+    const targetDates = this.#extractTargetDates();
+    targetDates.forEach(targetDate => {
+      const selectEl = document.getElementById('requestedSchedulePatternList_' + targetDate);
+      selectEl.value = ShiftAutoFiller.#zaitakuCoreTime10To14;
+    });
+  }
+
+  #extractTargetDates () {
+    const datesList = this.#getDatesOfMonthYYYYMMDD() ;
+    const remoteDates = datesList.filter(date =>
+        ShiftAutoFiller.#defaultRemoteDay.includes(this.#whichDayOfWeek(date))
+    );
+    return remoteDates.filter(
+        (date) => !this.#getHoliDaysYYYYMMDD().includes(date)
+    );
+  }
+
+  #getDatesOfMonthYYYYMMDD () {
+      const daysIdAttrList = Array.from(
+          document.getElementsByName("requested_schedule_pattern_list")
+      ).map((target) => target.id);
+
+      return daysIdAttrList.map(id => id.slice(-8));
+    }
+
+  #whichDayOfWeek(dateStr) {
+    const dayOfWeekList = [ '日', '月', '火', '水', '木', '金', '土' ];
+    const year = parseInt(dateStr.substring(0, 4), 10);
+    const month = parseInt(dateStr.substring(4, 6), 10) - 1; // 月は0から始まる
+    const day = parseInt(dateStr.substring(6, 8), 10);
+    const date = new Date(year, month, day);
+
+    return dayOfWeekList[date.getDay()];
+  }
+
+  #getHoliDaysYYYYMMDD () {
+    const holidaySundayList = Array.from(
+        document.getElementsByClassName("holiday")
+    ).map((target) => target.textContent);
+    const holidaysList = holidaySundayList.filter(date => !date.includes('日'));
+
+    return holidaysList.map(holiday => {
+      return `${this.#getYear()}${holiday.match(/\d+/g).join('')}`;
+    });
+  }
+
+  // FIXME:12月以外に翌年1月のシフトを入れようとすると、選択対象のyearが取れない。
+  #getYear = () => {
+    const date = new Date()
+    return date.getMonth() === 11
+      ? (date.getFullYear() + 1).toString()
+      : date.getFullYear().toString();
+  }
 }
 
-function isHoliday(dateStr) {
-  const month = dateStr.slice(4, 6);
-  const day = dateStr.slice(6, 8);
-
-  return holidays.includes(month + day);
-}
-
-function getDayOfWeek(dateStr) {
-  const dayOfWeekArray = [ '日', '月', '火', '水', '木', '金', '土' ];
-  const year = dateStr.slice(0, 4);
-  const month = dateStr.slice(4, 6) - 1; // Dateオブジェクトのmonthは0始まりなので1引く
-  const day = dateStr.slice(6, 8);
-
-  const date = new Date(year, month, day);
-  return dayOfWeekArray[date.getDay()];
-}
+const autoFiller = new ShiftAutoFiller;
