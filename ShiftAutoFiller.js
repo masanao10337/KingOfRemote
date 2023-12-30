@@ -4,13 +4,11 @@ class ShiftAutoFiller {
   #submitBtn;
 
   constructor() {
-    this.#createButton();
+    if (!this.#isSchedulePage()) return window.alert('スケジュール申請ページではありません。泣');
+    if (this.#buttonExists()) return window.alert('ボタンは一つあれば十分ではないですか？');
 
-    if (this.#isSchedulePage()) {
-        this.#renderButton();
-    } else {
-        this.#showAlert();
-    }
+      this.#createButton();
+      this.#renderButton();
   }
 
   #isSchedulePage() {
@@ -19,14 +17,14 @@ class ShiftAutoFiller {
         ?.childNodes[3].textContent.replace(/\r?\n/g, "");
     return pageTitle === 'スケジュール申請';
   }
+
+  #buttonExists() {
+    return !!document.getElementById('remote_shift_at_once');
+  }
   #renderButton () {
     document
         .getElementsByClassName("htBlock-headerPanel_inner")[0]
         .appendChild(this.#submitBtn);
-  }
-
-  #showAlert() {
-    window.alert('スケジュール申請ページではありません。泣')
   }
 
   #createButton () {
@@ -37,6 +35,7 @@ class ShiftAutoFiller {
 
   #generateButton () {
     this.#submitBtn = document.createElement('div');
+    this.#submitBtn.id = 'remote_shift_at_once';
   }
 
   #styleButton () {
