@@ -1,6 +1,6 @@
-import { DEFAULT_REMOTE_DAY } from "./Constant";
+import { DEFAULT_REMOTE_DAY } from "../Constant";
 
-export default class submitButtonBuilder {
+class SubmitButton {
   #submitBtn: HTMLDivElement;
 
   constructor (pickUpRemoteShift: () => void) {
@@ -12,6 +12,14 @@ export default class submitButtonBuilder {
   get submitBtn (): HTMLDivElement {
     if(this.#submitBtn === undefined) throw new Error('SubmitButton is not generated');
     return this.#submitBtn;
+  }
+
+  render (): void {
+      if(this.#submitBtn === undefined) throw new Error('SubmitButton is not generated');
+
+      document
+      .getElementsByClassName("htBlock-headerPanel_inner")[0]
+      .appendChild(this.#submitBtn);
   }
 
   #generateButton ():void {
@@ -47,3 +55,5 @@ export default class submitButtonBuilder {
     };
   }
 }
+
+export default SubmitButton;
