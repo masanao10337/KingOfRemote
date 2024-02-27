@@ -1,6 +1,6 @@
 class ShiftAutoFiller {
   static #defaultRemoteDay = ['火', '水'];
-  static #zaitakuCoreTime10To14 = '90000040394904';
+  static #zaitakuCoreTime10To14 = '90000065476630';
   #submitBtn;
 
   constructor() {
@@ -12,10 +12,11 @@ class ShiftAutoFiller {
   }
 
   #isSchedulePage() {
-    const pageTitle = document
-        .querySelector(".htBlock-pageTitle")
-        ?.childNodes[3].textContent.replace(/\r?\n/g, "");
-    return pageTitle === 'スケジュール申請';
+    const title = 'スケジュール申請'
+    return document
+        .querySelector(".htBlock-pageTitleSticky")
+        ?.childNodes[3].textContent
+        .includes(title)
   }
 
   #buttonExists() {
