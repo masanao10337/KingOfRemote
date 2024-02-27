@@ -1,21 +1,27 @@
+import submitButtonGenerator from './libs/submitButtonGenerator';
+
 class ShiftAutoFiller {
   static #defaultRemoteDay = ['火', '水'];
-  static #zaitakuCoreTime10To14 = '90000040394904';
+  static #zaitakuCoreTime10To14 = '90000065476630';
   #submitBtn;
 
   constructor() {
     if (!this.#isSchedulePage()) return window.alert('スケジュール申請ページではありません。泣');
     if (this.#buttonExists()) return window.alert('ボタンは一つあれば十分ではないですか？');
 
-      this.#createButton();
       this.#renderButton();
   }
 
   #isSchedulePage() {
-    const pageTitle = document
-        .querySelector(".htBlock-pageTitle")
-        ?.childNodes[3].textContent.replace(/\r?\n/g, "");
-    return pageTitle === 'スケジュール申請';
+    return this.#getPageTitle() === 'スケジュール申請';
+  }
+
+  #getPageTitle() {
+    return document
+    .querySelector(".htBlock-pageTitleSticky")
+    ?.textContent
+    .replace('このページのヘルプ', '') //ほとんどのページにこの文字列が含まれているので削除
+    .trim();
   }
 
   #buttonExists() {
@@ -27,45 +33,7 @@ class ShiftAutoFiller {
         .appendChild(this.#submitBtn);
   }
 
-  #createButton () {
-    this.#generateButton();
-    this.#styleButton();
-    this.#setButtonEvent();
-  }
-
-  #generateButton () {
-    this.#submitBtn = document.createElement('div');
-    this.#submitBtn.id = 'remote_shift_at_once';
-  }
-
-  #styleButton () {
-    this.#submitBtn.innerHTML = '在宅勤怠の一括入力';
-    this.#submitBtn.style.maxWidth = '100%';
-    this.#submitBtn.style.height = '40px';
-    this.#submitBtn.style.margin = '10px 20px';
-    this.#submitBtn.style.lineHeight = '40px';
-    this.#submitBtn.style.cursor = 'pointer';
-    this.#submitBtn.style.background = '#1D9E48';
-    this.#submitBtn.style.color = '#fff';
-    this.#submitBtn.style.textAlign = 'center';
-    this.#submitBtn.style.borderRadius = '4px';
-    this.#submitBtn.addEventListener('mouseover', () => {
-      this.#submitBtn.style.background = '#008735';
-    });
-    this.#submitBtn.addEventListener('mouseleave', () => {
-      this.#submitBtn.style.background = '#1D9E48';
-    });
-  }
-
-  #setButtonEvent() {
-    this.#submitBtn.onclick = () => {
-      const isConfirmed = window.confirm(
-        `${ShiftAutoFiller.#defaultRemoteDay.join(' / ')}曜日がリモートのシフトを一括で選択しますか？`
-      );
-      if (isConfirmed) this.#selectRemoteShift();
-    };
-  }
-
+  // ボタンを生成するときに引数としてこの内容を渡す。
   #selectRemoteShift() {
     const targetDates = this.#extractTargetDates();
     targetDates.forEach(targetDate => {
